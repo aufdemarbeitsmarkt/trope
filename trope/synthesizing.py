@@ -5,17 +5,55 @@ from math import ceil
 import numpy as np
 
 
-class Synthesis:
+class Tone:
 
     default_amplitude = 0.5
+
+    def __init__(
+        self,
+        frequency,
+        duration,
+        sample_rate,
+        amplitude=None
+        ):
+        self.frequency = frequency
+        self.duration = duration
+        self.sample_rate = sample_rate
+        self.duration_in_samples = self._get_duration_in_samples()
+        print(f'{list(self.range_cycles)=}')
+        print(f'{self.duration_in_samples=}')
+
+        if amplitude is None:
+            amplitude = self.default_amplitude
+        self.amplitude = amplitude
+
+        self.tone = self._generate_tone()
+
+    def _get_duration_in_samples(self):
+        self.cycle_time = int(self.sample_rate / self.frequency)
+        self.num_samples = int(self.sample_rate * self.duration)
+        self.range_cycles = range(0, self.num_samples + self.cycle_time, self.cycle_time)
+
+        diff_second_to_last, diff_last = abs(self.num_samples - self.range_cycles[-2]), abs(self.num_samples - self.range_cycles[-1])
+
+        which_cycle = np.argmin([diff_second_to_last, diff_last])
+
+        return self.range_cycles[-2] if which_cycle == 0 else self.range_cycles[-1]
+
+    def _generate_tone(self):
+        each_sample = np.arange(self.duration_in_samples)
+        sine = np.sin(2 * np.pi * each_sample * self.frequency / self.sample_rate) * self.amplitude
+        return sine
+
+
+class Synthesis:
 
     def __init__(
         self,
         input_refrain,
         durations,
         sample_rate,
-        timbre=None,
-        synthesized_output=None
+        timbre=None
         ):
         self.input_refrain = np.asarray(input_refrain)
         self.durations = np.asarray(durations)
@@ -23,6 +61,7 @@ class Synthesis:
         self.timbre = timbre
 
         self._setup_metadata()
+        print(f'{self.sample_boundaries=}')
 
         self.synthesized_output = self.synthesize()
 
@@ -48,10 +87,10 @@ class Synthesis:
         axis1 = ceil(self.total_duration) * self.sample_rate
         return np.zeros((axis0, axis1))
 
-    def _generate_tone(self, frequency, duration, amplitude=1):
-        each_sample = np.arange(ceil(duration * self.sample_rate))
-        tone = np.sin(2 * np.pi * each_sample * frequency / self.sample_rate) * amplitude
-        return tone
+    # def _generate_tone(self, frequency, duration, amplitude=1):
+    #     each_sample = np.arange(ceil(duration * self.sample_rate))
+    #     tone = np.sin(2 * np.pi * each_sample * frequency / self.sample_rate) * amplitude
+    #     return tone
 
     def _create_nxn_array(self, frequencies, duration):
         chord = isinstance(frequencies, tuple)
@@ -67,16 +106,22 @@ class Synthesis:
         if chord and self.timbre_present:
             chord_timbre_prod = product(frequencies, self.timbre)
             for i, (freq, (overtone, amplitude)) in enumerate(chord_timbre_prod):
-                nxn_array[i] = self._generate_tone(freq*overtone, duration=duration, amplitude=amplitude)
+                nxn_array[i] = Tone(frequency=freq*overtone, duration=duration, amplitude=amplitude).tone
+
+                # self._generate_tone(freq*overtone, duration=duration, amplitude=amplitude)
 
         elif self.timbre_present:
             for i, (overtone, amplitude) in enumerate(self.timbre):
-                tone = self._generate_tone(frequencies*overtone, duration=duration, amplitude=amplitude)
+                tone = Tone(frequency=frequencies*overtone, duration=duration, sample_rate=self.sample_rate, amplitude=amplitude).tone
+
+                # self._generate_tone(frequencies*overtone, duration=duration, amplitude=amplitude)
+
                 nxn_array[i] = tone
 
         else:
             for i, freq in enumerate(frequencies):
-                nxn_array[i] = self._generate_tone(freq, duration=duration)
+                nxn_array[i] = Tone(frequency=freq, duration=duration, sample_rate=self.sample_rate).tone
+                # self._generate_tone(freq, duration=duration)
 
         return nxn_array
 
@@ -85,7 +130,7 @@ class Synthesis:
         freq, dur = self.setup_refrain
 
         for i, (f,d) in enumerate(zip(freq, dur)):
-            if f is None:
+            if f is None: # a rest
                 pass
 
             elif isinstance(f, tuple) or self.timbre_present:
@@ -93,7 +138,12 @@ class Synthesis:
                 matrix[0:nxn.shape[0], self.sample_boundaries[i]:self.sample_boundaries[i] + nxn.shape[-1]] = nxn
 
             elif isinstance(f, (float, np.floating, int, np.integer)):
-                tone = self._generate_tone(f, d)
+                tone = Tone(frequency=f, duration=d, sample_rate=self.sample_rate).tone
+
+                # self._generate_tone(f, d)
+
+                print(self.sample_boundaries[i], self.sample_boundaries[i] + tone.shape[-1]) ## THERE'S SOME WEIRDNESS HERE - NEED TO GET THIS TO WORK WITH THE NEW TONE CLASS
+
                 matrix[0, self.sample_boundaries[i]:self.sample_boundaries[i] + tone.shape[-1]] = tone
 
             elif isinstance(f, list):

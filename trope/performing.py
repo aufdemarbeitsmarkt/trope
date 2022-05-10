@@ -127,21 +127,8 @@ from librosa import note_to_hz
 riff = note_to_hz(['A3', 'C#3', 'C#4', 'E4', 'D4', 'E4', 'A3', 'C#4'])
 
 p1 = Performer(
-    Improv(riff).markov(walk_length=len(riff) * 3),
-    durations=np.tile([0.5, 0.25],20),
-    timbre=((1,1), (3,0.5), (5,0.25), (7,0.25)),
-    effects={'delay': (8, 500, (0.9, 0.1), 'reflect')}
+    riff,
+    durations=np.tile([0.5, 0.5], 4)
 )
 
-p2 = Performer(
-    Improv(riff).markov(walk_length=8),
-    durations=np.tile([0.25, 0.5, 0.25], 20),
-timbre=((1,1), (4,0.5), (5,0.25), (8,0.25)),
-    effects={'delay': (5, 100, (0.9, 0.1), 'reflect')}
-)
-
-perf = Performance(
-    [p1, p2]
-)
-
-perf.save('performance_example!')
+p1.save('performance_example!')
