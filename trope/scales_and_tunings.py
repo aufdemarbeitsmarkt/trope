@@ -87,26 +87,3 @@ class Chord(Scale):
 
     def chord_progression(self, progression: List[int] = None) -> List:
         pass
-
-S = Scale('major', 'G').notes()
-print(S)
-
-
-
-
-
-# ['I-IV-V']
-
-
-
-
-
-# cmaj = [0, 4, 7]
-#
-# def suspended_chord(self=cmaj, add=None, remove=None):
-#     if add is not None:
-#         self.append(add)
-#     if remove is not None:
-#         self.pop(remove)
-#     return self
-# print(suspended_chord(add=7))

@@ -2,7 +2,6 @@
 import librosa
 import numpy as np
 from scipy.io.wavfile import write
-import sounddevice
 import time
 
 from effects import Effect
@@ -25,26 +24,12 @@ class Audio:
     def playtime(self):
         return librosa.get_duration(y=self.audio, sr=self.sample_rate)
 
-    def play(self):
-        sounddevice.play(self.audio, self.sample_rate)
-        time.sleep(self.playtime)
-        self.stop()
-
-    def stop(self):
-        sounddevice.stop()
-
     def save(self, filename=None, filetype='.wav'):
         write(filename=filename + filetype, rate=self.sample_rate, data=self.audio)
 
     @classmethod
     def load(cls, file, sr=default_sample_rate, mono=True, offset=0.0, duration=None):
         y, _ = librosa.load(file, sr=sr, mono=mono, offset=offset, duration=duration)
-        return cls(y, sr)
-
-    @classmethod
-    def record(cls, duration, sr=default_sample_rate):
-        y = sounddevice.rec(int(duration * sr), samplerate=sr, channels=2, blocking='True')
-        # sounddevice.wait()
         return cls(y, sr)
 
 
@@ -119,16 +104,3 @@ class Performance(Audio):
         normalized_performers = librosa.util.normalize(self.performers, norm=0, axis=0, threshold=None, fill=None)
 
         return np.sum(normalized_performers, axis=0)
-
-
-
-
-from librosa import note_to_hz
-riff = note_to_hz(['A3', 'C#3', 'C#4', 'E4', 'D4', 'E4', 'A3', 'C#4'])
-
-p1 = Performer(
-    riff,
-    durations=np.tile([0.5, 0.5], 4)
-)
-
-p1.save('performance_example!')

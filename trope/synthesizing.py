@@ -20,7 +20,7 @@ class Tone:
         self.duration = duration
         self.sample_rate = sample_rate
         self.duration_in_samples = self._get_duration_in_samples()
-        print(f'{list(self.range_cycles)=}')
+
         print(f'{self.duration_in_samples=}')
 
         if amplitude is None:
@@ -142,7 +142,7 @@ class Synthesis:
 
                 # self._generate_tone(f, d)
 
-                print(self.sample_boundaries[i], self.sample_boundaries[i] + tone.shape[-1]) ## THERE'S SOME WEIRDNESS HERE - NEED TO GET THIS TO WORK WITH THE NEW TONE CLASS
+                ## THERE'S SOME WEIRDNESS HERE - NEED TO GET THIS TO WORK WITH THE NEW TONE CLASS
 
                 matrix[0, self.sample_boundaries[i]:self.sample_boundaries[i] + tone.shape[-1]] = tone
 
