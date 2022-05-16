@@ -22,6 +22,7 @@ class Tone:
         self.duration_in_samples = self._get_duration_in_samples()
 
         print(f'{self.duration_in_samples=}')
+        print(f'{list(self.range_cycles)=}')
 
         if amplitude is None:
             amplitude = self.default_amplitude
