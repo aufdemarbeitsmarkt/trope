@@ -21,9 +21,6 @@ class Tone:
         self.sample_rate = sample_rate
         self.duration_in_samples = self._get_duration_in_samples()
 
-        print(f'{self.duration_in_samples=}')
-        print(f'{list(self.range_cycles)=}')
-
         if amplitude is None:
             amplitude = self.default_amplitude
         self.amplitude = amplitude
@@ -31,9 +28,13 @@ class Tone:
         self.tone = self._generate_tone()
 
     def _get_duration_in_samples(self):
-        self.cycle_time = int(self.sample_rate / self.frequency)
-        self.num_samples = int(self.sample_rate * self.duration)
-        self.range_cycles = range(0, self.num_samples + self.cycle_time, self.cycle_time)
+        '''
+        This method sets a number of instance variables and returns the duration in samples quantized to a zero crossing rate.
+        '''
+        self.cycle_time_samples = self.sample_rate / self.frequency
+        self.zero_crossing_time_samples = self.cycle_time_samples / 2
+        self.num_samples = self.sample_rate * self.duration
+        self.range_cycles = np.ceil(np.arange(0, int(self.num_samples + self.zero_crossing_time_samples), self.zero_crossing_time_samples))
 
         diff_second_to_last, diff_last = abs(self.num_samples - self.range_cycles[-2]), abs(self.num_samples - self.range_cycles[-1])
 
@@ -62,7 +63,6 @@ class Synthesis:
         self.timbre = timbre
 
         self._setup_metadata()
-        print(f'{self.sample_boundaries=}')
 
         self.synthesized_output = self.synthesize()
 
