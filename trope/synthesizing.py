@@ -32,9 +32,8 @@ class Tone:
         This method sets a number of instance variables and returns the duration in samples quantized to a zero crossing rate.
         '''
         self.cycle_time_samples = self.sample_rate / self.frequency
-        self.zero_crossing_time_samples = self.cycle_time_samples / 2
         self.num_samples = self.sample_rate * self.duration
-        self.range_cycles = np.ceil(np.arange(0, int(self.num_samples + self.zero_crossing_time_samples), self.zero_crossing_time_samples))
+        self.range_cycles = np.ceil(np.arange(0, int(self.num_samples + self.cycle_time_samples), self.cycle_time_samples))
 
         diff_second_to_last, diff_last = abs(self.num_samples - self.range_cycles[-2]), abs(self.num_samples - self.range_cycles[-1])
 
@@ -87,11 +86,6 @@ class Synthesis:
         axis0 = self.longest_chord_len * len(self.timbre) if self.timbre_present else self.longest_chord_len
         axis1 = ceil(self.total_duration) * self.sample_rate
         return np.zeros((axis0, axis1))
-
-    # def _generate_tone(self, frequency, duration, amplitude=1):
-    #     each_sample = np.arange(ceil(duration * self.sample_rate))
-    #     tone = np.sin(2 * np.pi * each_sample * frequency / self.sample_rate) * amplitude
-    #     return tone
 
     def _create_nxn_array(self, frequencies, duration):
         chord = isinstance(frequencies, tuple)
