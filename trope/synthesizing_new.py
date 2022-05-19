@@ -70,3 +70,12 @@ class Synthesis:
         which_cycle = np.argmin([diff_second_to_last, diff_last])
 
         return range_cycles[-2] if which_cycle == 0 else range_cycles[-1]
+
+    def _intialize_matrix(self):
+        '''
+        Sets self.total_duration_in_samples.
+        Returns a matrix for the entire Synthesis object, i.e. allocates space in memory in advance.
+        '''
+        max_durations_samples = np.max(self.duration_in_samples, axis=0)
+        self.total_duration_in_samples = np.sum(max_durations_samples, dtype='int')
+        return np.empty((self.refrain.shape[0], self.total_duration_in_samples))
