@@ -49,6 +49,8 @@ class Tone:
 
 class Synthesis:
 
+    sample_len_log = []
+
     def __init__(
         self,
         input_refrain,
