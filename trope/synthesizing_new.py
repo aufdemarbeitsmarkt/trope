@@ -73,7 +73,7 @@ class Synthesis:
 
         return range_cycles[-2] if which_cycle == 0 else range_cycles[-1]
 
-    def _intialize_matrix(self):
+    def _initialize_matrix(self):
         '''
         Sets self.total_duration_in_samples.
         Returns a matrix for the entire Synthesis object, i.e. allocates space in memory in advance.
