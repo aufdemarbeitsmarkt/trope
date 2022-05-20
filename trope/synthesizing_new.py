@@ -58,6 +58,8 @@ class Synthesis:
 
         self.durations_in_samples = self._vectorized_get_duration_in_samples(self.refrain, self.durations)
 
+        synthesized_output = self._synthesize()
+
     def _get_duration_in_samples(self, frequency, duration_in_seconds):
         if frequency == 0:
             return 0
@@ -76,6 +78,10 @@ class Synthesis:
         Sets self.total_duration_in_samples.
         Returns a matrix for the entire Synthesis object, i.e. allocates space in memory in advance.
         '''
-        max_durations_samples = np.max(self.duration_in_samples, axis=0)
+        max_durations_samples = np.max(self.durations_in_samples, axis=0)
         self.total_duration_in_samples = np.sum(max_durations_samples, dtype='int')
         return np.empty((self.refrain.shape[0], self.total_duration_in_samples))
+
+    def _synthesize(self):
+        output = self._initialize_matrix()
+        pass
