@@ -1,35 +1,8 @@
 #!/usr/bin/python3
 from itertools import product
 import librosa
+from math import ceil
 import numpy as np
-
-
-class Tone:
-
-    default_amplitude = 0.5
-
-    def __init__(
-        self,
-        frequency,
-        duration_in_samples,
-        sample_rate,
-        amplitude=None
-        ):
-        self.frequency = frequency
-        self.duration_in_samples = self.duration_in_samples
-        self.sample_rate = sample_rate
-
-        if amplitude is None:
-            amplitude = self.default_amplitude
-        self.amplitude = amplitude
-
-        self.each_sample = np.arange(self.duration_in_samples)
-
-        self.tone = self._generate_tone()
-
-    def _generate_tone(self):
-        sine = np.sin(2 * np.pi * self.each_sample * self.frequency / self.sample_rate) * self.amplitude
-        return sine
 
 
 class Synthesis:
@@ -50,6 +23,7 @@ class Synthesis:
             # ensure they have the same size by tiling, create 'refrain' and 'durations' attributes
             self.refrain = np.tile(self.input_refrain, len(self.input_durations))
             self.durations = np.tile(self.input_durations, self.input_refrain.shape[1])
+
         else:
             self.refrain = self.input_refrain
             self.durations = self.input_durations
@@ -60,7 +34,22 @@ class Synthesis:
 
         self.max_durations_samples = np.max(self.durations_in_samples, axis=0).astype('int')
 
-        synthesized_output = self._synthesize()
+        _cumsum_max_durations = np.ravel(np.cumsum(self.max_durations_samples))
+        self.sample_boundaries = np.insert(_cumsum_max_durations[:-1], 0, 0)
+
+        self.synthesized_output = self._synthesize()
+
+    def _generate_tone(self, frequency, duration_in_samples, amplitude=0.5, pad_amount=0):
+        each_sample = np.arange(duration_in_samples)
+        sine = np.sin(2 * np.pi * each_sample * frequency / self.sample_rate) * amplitude
+
+        if pad_amount - duration_in_samples > 0:
+            pad_for_each_side = (pad_amount - duration_in_samples) / 2
+            beginning = int(pad_for_each_side)
+            end = ceil(pad_for_each_side)
+            return np.pad(sine, (beginning, end)) # note: also works for rests
+
+        return sine
 
     def _get_duration_in_samples(self, frequency, duration_in_seconds):
         if frequency == 0:
@@ -83,6 +72,20 @@ class Synthesis:
         self.total_duration_in_samples = np.sum(self.max_durations_samples, dtype='int')
         return np.empty((self.refrain.shape[0], self.total_duration_in_samples))
 
-    def _synthesize(self):
+    def _synthesize(self, normalize_output=True, sum_output=True):
         output = self._initialize_matrix()
-        pass
+
+        for i,r in np.ndenumerate(self.refrain):
+
+            tone = self._generate_tone(
+                frequency=r,
+                duration_in_samples=self.durations_in_samples[i], pad_amount=self.max_durations_samples[0,i[1]]
+                )
+            output[i[0], self.sample_boundaries[i[1]] : self.sample_boundaries[i[1]]+tone.size] = tone
+
+        if normalize_output:
+            output = librosa.util.normalize(output, norm=0, axis=0, threshold=None, fill=None)
+        if sum_output:
+            output = np.sum(output, axis=0)
+
+        return output
