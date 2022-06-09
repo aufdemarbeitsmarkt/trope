@@ -58,31 +58,51 @@ class Envelope:
 
         return complete_sustain
 
-    def generate_release(self, input_signal=None, min_level=None, max_level=None, release_point=None):
+    def generate_release(self, input_signal_size=None, min_level=None, max_level=None):
         if min_level is None:
             min_level = self.sustain_level
         if max_level is None:
             max_level = self.quiet_level
 
+        release_size = get_release_size(input_signal_size, self.release_setting)
+
         release_range = self.sample_rate * np.linspace(0.001, 10, num=100)
         complete_release = np.geomspace(
             min_level,
             max_level,
-            num=int(release_range[self.release_setting])
+            num=release_size
             )
-
-        if release_point is not None:
-            release_size = self.get_release_size(input_signal, release_point)
-            return complete_release[:release_size]
 
         return complete_release
 
-    def get_release_size(self, input_signal, release_point):
-        return int(input_signal.size * (release_point/100))
-
-    @property
-    def release(self):
-        return self.generate_release()
+    @staticmethod
+    def get_release_size(input_signal_size, release_point):
+        return int(input_signal_size * (release_point/100))
 
     def generate_envelope_signal(self, input_signal, release_point=20):
-        pass
+        input_signal_size = input_signal.size
+        release_size = self.get_release_size(input_signal_size, self.release_setting)
+
+        envelope = np.empty(input_signal_size)
+
+        if self.attack.size + release_size >= input_signal_size:
+            envelope[:-release_size] = self.attack[:-release_size]
+            envelope[-release_size:] = self.generate_release(
+                input_signal_size,
+                min_level=self.attack[-release_size]
+                )
+        elif self.attack.size + self.decay.size + release_size >= input_signal_size:
+            envelope[:self.attack.size] = self.attack
+            envelope[self.attack.size:-release_size] = self.decay[:-release_size]
+            envelope[-release_size:] = self.generate_release(
+                input_signal_size,
+                min_level=self.decay[-release_size]
+                )
+        elif self.attack.size + self.decay.size + self.sustain.size + release_size >= input_signal_size:
+            envelope[:self.attack.size] = self.attack
+            envelope[self.attack.size:self.decay.size] = self.decay
+            envelope[self.decay.size:-release_size] = self.sustain[:-release_size]
+            envelope[-release_size:] = self.generate_release(
+                input_signal_size,
+                min_level=self.sustain[-release_size]
+                )
