@@ -4,7 +4,6 @@ import numpy as np
 class Envelope:
 
     # insert default arguments for each stage here, e.g. sample_rate * np.linspace(param1, param2, num=param3)
-    # also attack level, sustain level, and quiet level
 
     attack_level = 1.0
     sustain_level = 0.75
