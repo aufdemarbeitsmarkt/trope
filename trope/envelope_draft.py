@@ -8,41 +8,50 @@ class Envelope:
 
     attack_level = 1.0
     sustain_level = 0.75
-    quiet_level = 0.0
+    quiet_level = 0.001
 
     def __init__(
         self,
-        input_signal,
         sample_rate,
         attack_setting,
         decay_setting,
         sustain_setting,
         release_setting
         ):
-        self.input_signal = input_signal
-        self.sample_rate = sample_rate
-        self.attack_setting = attack_setting
-        self.decay_setting = decay_setting
-        self.sustain_setting = sustain_setting
-        self.release_setting = release_setting
+        self.sample_rate=sample_rate
+        self.attack_setting=attack_setting
+        self.decay_setting=decay_setting
+        self.sustain_setting=sustain_setting
+        self.release_setting=release_setting
+
+    @classmethod
+    def base(cls, sample_rate):
+        return cls(
+            sample_rate=sample_rate,
+            attack_setting=2,
+            decay_setting=2,
+            sustain_setting=10,
+            release_setting=10
+            )
 
     @property
     def attack(self):
         attack_range = self.sample_rate * np.linspace(0.001, 5, num=100)
 
-        complete_attack = np.linspace(
+        complete_attack = np.geomspace(
             self.quiet_level,
             self.attack_level,
             num=int(attack_range[self.attack_setting])
             )
 
+        complete_attack[0] = 0.0
         return complete_attack
 
     @property
     def decay(self):
         decay_range = self.sample_rate * np.linspace(0.001, 10, num=100)
 
-        complete_decay = np.linspace(
+        complete_decay = np.geomspace(
             self.attack_level,
             self.sustain_level,
             num=int(decay_range[self.decay_setting])
@@ -67,12 +76,11 @@ class Envelope:
         release_size = self.get_release_size(input_signal_size, self.release_setting)
 
         release_range = self.sample_rate * np.linspace(0.001, 10, num=100)
-        complete_release = np.linspace(
+        complete_release = np.geomspace(
             min_level,
             max_level,
             num=release_size
             )
-        
         return complete_release
 
     @staticmethod
@@ -83,7 +91,7 @@ class Envelope:
         input_signal_size = input_signal.size
         release_size = self.get_release_size(input_signal_size, self.release_setting)
 
-        envelope = np.empty(input_signal_size)
+        envelope = np.zeros(input_signal_size)
 
         if self.attack.size + release_size >= input_signal_size:
             # set the attack
@@ -117,6 +125,18 @@ class Envelope:
             envelope[-release_size:] = self.generate_release(
                 input_signal_size,
                 min_level=self.sustain[sustain_amt]
+                )
+        else:
+            # set the attack
+            envelope[:self.attack.size] = self.attack
+            # set the decay
+            envelope[self.attack.size:self.attack.size + self.decay.size] = self.decay
+            # set the sustain
+            envelope[self.attack.size + self.decay.size:self.attack.size + self.decay.size + self.sustain.size] = self.sustain 
+            # set the release 
+            envelope[self.attack.size + self.decay.size + self.sustain.size:self.attack.size + self.decay.size + self.sustain.size + release_size] = self.generate_release(
+                input_signal_size,
+                min_level=self.sustain[-1]
                 )
 
         return envelope
