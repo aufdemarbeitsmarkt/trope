@@ -11,17 +11,17 @@ class Envelope:
 
     def __init__(
         self,
-        sample_rate,
         attack_setting,
         decay_setting,
         sustain_setting,
-        release_setting
+        release_setting,
+        sample_rate
         ):
-        self.sample_rate=sample_rate
-        self.attack_setting=attack_setting
-        self.decay_setting=decay_setting
-        self.sustain_setting=sustain_setting
-        self.release_setting=release_setting
+        self.attack_setting = attack_setting
+        self.decay_setting = decay_setting
+        self.sustain_setting = sustain_setting
+        self.release_setting = release_setting
+        self.sample_rate = sample_rate
 
     @classmethod
     def base(cls, sample_rate):

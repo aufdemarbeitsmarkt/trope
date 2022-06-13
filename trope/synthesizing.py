@@ -4,6 +4,7 @@ import librosa
 from math import ceil
 import numpy as np
 
+from envelope import Envelope
 
 class Synthesis:
 
@@ -12,11 +13,13 @@ class Synthesis:
         input_refrain,
         input_durations,
         sample_rate,
+        envelope=None,
         timbre=None
         ):
         self.input_refrain = np.asmatrix(input_refrain) # this will enforce 2-dimensionality via exception - ValueError
         self.input_durations = np.asarray(input_durations)
         self.sample_rate = sample_rate
+        self.envelope = envelope
         self.timbre = timbre
 
         if self.input_refrain.shape[1] != self.input_durations.shape[0]:
@@ -81,6 +84,16 @@ class Synthesis:
                 frequency=r,
                 duration_in_samples=self.durations_in_samples[i], pad_amount=self.max_durations_samples[0,i[1]]
                 )
+
+            # set envelope
+            if self.envelope is None: 
+                E = Envelope.base(sample_rate=self.sample_rate)
+            else:
+                E = Envelope(*self.envelope, sample_rate=self.sample_rate)
+            
+            env = E.generate_envelope_signal(tone)
+            tone *= env
+
             output[i[0], self.sample_boundaries[i[1]] : self.sample_boundaries[i[1]]+tone.size] = tone
 
         if normalize_output:
