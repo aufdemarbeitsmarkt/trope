@@ -6,6 +6,7 @@ import numpy as np
 
 from envelope import Envelope
 
+
 class Synthesis:
 
     def __init__(
