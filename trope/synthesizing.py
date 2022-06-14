@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-from itertools import product
 import librosa
 from math import ceil
 import numpy as np
@@ -27,7 +26,6 @@ class Synthesis:
             # ensure they have the same size by tiling, create 'refrain' and 'durations' attributes
             self.refrain = np.tile(self.input_refrain, len(self.input_durations))
             self.durations = np.tile(self.input_durations, self.input_refrain.shape[1])
-
         else:
             self.refrain = self.input_refrain
             self.durations = self.input_durations

@@ -1,11 +1,15 @@
 #!/usr/bin/python3
-from typing import Union, List
-from librosa import hz_to_note, note_to_hz
-import librosa
+from typing import List
+from librosa import note_to_hz
 import numpy as np
 
-NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'] # rename NOTES_SHARP
-# NOTES_FLAT = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
+NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+NOTES_SHARP = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+NOTES_FLAT = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
+
+def convert_hz_to_note(notes_arr):
+    split_notes_arr = np.array([n.split(',') for n in notes_arr.ravel()])
+    return note_to_hz(split_notes_arr)
 
 class Scale:
 
