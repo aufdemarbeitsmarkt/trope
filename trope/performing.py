@@ -63,12 +63,14 @@ class Performer(Audio):
         effects_dict = self.__dict__.get('effects')
         durations = self.__dict__.get('durations', [1])
         timbre = self.__dict__.get('timbre')
+        envelope = self.__dict__.get('envelope')
 
         y = Synthesis(
             input_refrain=self.refrain,
-            durations=durations,
+            input_durations=durations,
             sample_rate=self.sample_rate,
-            timbre=timbre
+            timbre=timbre,
+            envelope=envelope
         ).synthesized_output
 
         if effects_dict is None:
