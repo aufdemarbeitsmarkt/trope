@@ -9,7 +9,7 @@ NOTES_SHARP = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 NOTES_FLAT = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
 
 def convert_hz_to_note(notes_arr):
-    split_notes_arr = np.array([n.split(',') for n in notes_arr.ravel()])
+    split_notes_arr = np.array([n.split(', ') for n in notes_arr.ravel()])
     return note_to_hz(split_notes_arr)
 
 @dataclass

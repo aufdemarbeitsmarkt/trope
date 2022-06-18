@@ -4,6 +4,7 @@ from math import ceil
 import numpy as np
 
 from envelope import Envelope
+from scales_and_tunings import convert_hz_to_note
 
 
 class Synthesis:
@@ -16,11 +17,17 @@ class Synthesis:
         envelope=None,
         timbre=None
         ):
-        self.input_refrain = np.asmatrix(input_refrain) # this will enforce 2-dimensionality via exception - ValueError
+        # TODO
+        # enforce 2-dimensionality of refrain and 1-dimensionality of durations
+        self.input_refrain = np.asarray(input_refrain) 
         self.input_durations = np.asarray(input_durations)
         self.sample_rate = sample_rate
         self.envelope = envelope
         self.timbre = timbre
+
+        # check whether the performer is passing note values directly
+        if all([notes.dtype.type is np.str_ for r in self.input_refrain for notes in r]):
+            self.input_refrain = convert_hz_to_note(self.input_refrain)
 
         if self.input_refrain.shape[1] != self.input_durations.shape[0]:
             # ensure they have the same size by tiling, create 'refrain' and 'durations' attributes
@@ -81,7 +88,7 @@ class Synthesis:
 
             tone = self._generate_tone(
                 frequency=r,
-                duration_in_samples=self.durations_in_samples[i], pad_amount=self.max_durations_samples[0,i[1]]
+                duration_in_samples=self.durations_in_samples[i], pad_amount=self.max_durations_samples[i[1]]
                 )
 
             # set envelope
