@@ -99,7 +99,7 @@ class Envelope:
             # set the release
             envelope[-release_size:] = self.generate_release(
                 input_signal_size,
-                min_level=self.attack[attack_amt]
+                min_level=self.attack[attack_amt - 1]
                 )
         elif self.attack.size + self.decay.size + release_size >= input_signal_size:
             # set the attack
@@ -110,7 +110,7 @@ class Envelope:
             # set the release
             envelope[-release_size:] = self.generate_release(
                 input_signal_size,
-                min_level=self.decay[decay_amt]
+                min_level=self.decay[decay_amt - 1]
                 )
         elif self.attack.size + self.decay.size + self.sustain.size + release_size >= input_signal_size:
             # set the attack
@@ -123,7 +123,7 @@ class Envelope:
             # set the release
             envelope[-release_size:] = self.generate_release(
                 input_signal_size,
-                min_level=self.sustain[sustain_amt]
+                min_level=self.sustain[sustain_amt - 1]
                 )
         else:
             # set the attack
