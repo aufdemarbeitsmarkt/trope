@@ -35,8 +35,6 @@ class Audio:
 
 class Performer(Audio):
 
-    note_type = 'hz'
-
     def __init__(
         self,
         refrain,

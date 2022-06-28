@@ -45,7 +45,7 @@ class Scale:
         '''
         Rearranges the above NOTES list so that the 0th index is the supplied `note`.
         '''
-        root_index = np.nonzero(np.isin(NOTES, note))[0][0]
+        root_index = NOTES.index(note)
         rearranged_notes = NOTES[root_index:] + NOTES[:root_index]
         return rearranged_notes
 
