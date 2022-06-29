@@ -85,6 +85,7 @@ class Synthesis:
         output = self._initialize_matrix()
 
         for i,r in np.ndenumerate(self.refrain):
+            print(i[0])
 
             tone = self._generate_tone(
                 frequency=r,
