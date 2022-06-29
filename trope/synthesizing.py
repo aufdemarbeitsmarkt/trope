@@ -37,6 +37,15 @@ class Synthesis:
             self.refrain = self.input_refrain
             self.durations = self.input_durations
 
+        # TODO 
+        # add a function or loop to extend the refrain to match the timbre; something like below:
+        '''
+        for i,(factor,amplitude) in enumerate(timbre):
+            if i > 0 :
+                print(refrain*factor)
+                refrain = np.concatenate((refrain, refrain*factor))
+        '''
+
         self._vectorized_get_duration_in_samples = np.vectorize(self._get_duration_in_samples)
 
         self.durations_in_samples = self._vectorized_get_duration_in_samples(self.refrain, self.durations)
@@ -85,11 +94,13 @@ class Synthesis:
         output = self._initialize_matrix()
 
         for i,r in np.ndenumerate(self.refrain):
-            print(i[0])
+            # print(i[0])
 
             tone = self._generate_tone(
                 frequency=r,
-                duration_in_samples=self.durations_in_samples[i], pad_amount=self.max_durations_samples[i[1]]
+                duration_in_samples=self.durations_in_samples[i], 
+                amplitude=self.timbre[i[0]][1]
+                pad_amount=self.max_durations_samples[i[1]]
                 )
 
             # set envelope
