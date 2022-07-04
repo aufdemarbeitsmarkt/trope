@@ -9,7 +9,6 @@ from improvising import Improv
 from synthesizing import Synthesis
 
 
-
 class Audio:
 
     default_sample_rate = 22050
@@ -40,7 +39,6 @@ class Performer(Audio):
         refrain,
         audio=None,
         sample_rate=None,
-        note_type=None,
         **kwargs
         ):
         super().__init__(sample_rate)
@@ -50,10 +48,6 @@ class Performer(Audio):
         if sample_rate is None:
             sample_rate = self.default_sample_rate
         self.sample_rate = sample_rate
-
-        if note_type is None:
-            note_type = self.note_type
-        self.note_type = note_type
 
         self.audio = self._create_audio()
 

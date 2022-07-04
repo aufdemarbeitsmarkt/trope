@@ -36,15 +36,13 @@ class Synthesis:
         else:
             self.refrain = self.input_refrain
             self.durations = self.input_durations
-
-        # TODO 
-        # add a function or loop to extend the refrain to match the timbre; something like below:
-        '''
-        for i,(factor,amplitude) in enumerate(timbre):
-            if i > 0 :
-                print(refrain*factor)
-                refrain = np.concatenate((refrain, refrain*factor))
-        '''
+        
+        # if a timbre value is provided, use that to set refrain to include the timbre values
+        if self.timbre is not None:
+            self.refrain = np.reshape(
+                    [self.refrain * factor for (factor,_) in self.timbre], 
+                    (self.refrain.shape[0] * len(self.timbre), self.refrain.shape[-1])
+                    )
 
         self._vectorized_get_duration_in_samples = np.vectorize(self._get_duration_in_samples)
 
@@ -94,12 +92,14 @@ class Synthesis:
         output = self._initialize_matrix()
 
         for i,r in np.ndenumerate(self.refrain):
-            # print(i[0])
+
+            amp = 0.5 if self.timbre is None else self.timbre[i[0]][1] 
+            print(amp) # IndexError: tuple index out of range getting an IndexError; need to troubleshoot
 
             tone = self._generate_tone(
                 frequency=r,
                 duration_in_samples=self.durations_in_samples[i], 
-                amplitude=self.timbre[i[0]][1]
+                amplitude=amp,
                 pad_amount=self.max_durations_samples[i[1]]
                 )
 
