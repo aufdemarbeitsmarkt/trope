@@ -91,10 +91,17 @@ class Synthesis:
     def _synthesize(self, normalize_output=True, sum_output=True):
         output = self._initialize_matrix()
 
-        for i,r in np.ndenumerate(self.refrain):
+        t = iter(self.timbre) if self.timbre is not None else False
+        counter = 0
 
-            amp = 0.5 if self.timbre is None else self.timbre[i[0]][1] 
-            print(amp) # IndexError: tuple index out of range getting an IndexError; need to troubleshoot
+        for i,r in np.ndenumerate(self.refrain):
+            # use this counter to grab the next value from t, i.e. self.timbre
+            if counter == 0:
+                # TODO - this 0.5 default value for amp could be specified elsewhere, especially to allow the end-user to set it themselves
+                amp = next(t)[1] if t else 0.5 
+            counter += 1
+            if counter / (self.refrain.size / len(self.timbre)) == 1:
+                counter = 0
 
             tone = self._generate_tone(
                 frequency=r,
