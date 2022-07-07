@@ -36,6 +36,13 @@ class Synthesis:
         else:
             self.refrain = self.input_refrain
             self.durations = self.input_durations
+        
+        # if a timbre value is provided, use that to set refrain to include the timbre values
+        if self.timbre is not None:
+            self.refrain = np.reshape(
+                    [self.refrain * factor for (factor,_) in self.timbre], 
+                    (self.refrain.shape[0] * len(self.timbre), self.refrain.shape[-1])
+                    )
 
         self._vectorized_get_duration_in_samples = np.vectorize(self._get_duration_in_samples)
 
@@ -84,11 +91,23 @@ class Synthesis:
     def _synthesize(self, normalize_output=True, sum_output=True):
         output = self._initialize_matrix()
 
+        t = iter(self.timbre) if self.timbre is not None else False
+        counter = 0
+
         for i,r in np.ndenumerate(self.refrain):
+            # use this counter to grab the next value from t, i.e. self.timbre
+            if counter == 0:
+                # TODO - this 0.5 default value for amp could be specified elsewhere, especially to allow the end-user to set it themselves
+                amp = next(t)[1] if t else 0.5 
+            counter += 1
+            if counter / (self.refrain.size / len(self.timbre)) == 1:
+                counter = 0
 
             tone = self._generate_tone(
                 frequency=r,
-                duration_in_samples=self.durations_in_samples[i], pad_amount=self.max_durations_samples[i[1]]
+                duration_in_samples=self.durations_in_samples[i], 
+                amplitude=amp,
+                pad_amount=self.max_durations_samples[i[1]]
                 )
 
             # set envelope
