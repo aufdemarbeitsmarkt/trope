@@ -7,6 +7,7 @@ import time
 from effects import Effect
 from improvising import Improv
 from synthesizing import Synthesis
+from scales_and_tunings import convert_hz_to_note
 
 
 class Audio:
@@ -43,7 +44,8 @@ class Performer(Audio):
         ):
         super().__init__(sample_rate)
         self.__dict__.update(kwargs)
-        self.refrain = refrain
+        
+        self.refrain = np.asarray(refrain)
 
         if sample_rate is None:
             sample_rate = self.default_sample_rate
@@ -54,8 +56,15 @@ class Performer(Audio):
     def _create_audio(self):
         effects_dict = self.__dict__.get('effects')
         durations = self.__dict__.get('durations', [1])
-        timbre = self.__dict__.get('timbre')
+        timbre = self.__dict__.get('timbre', ((1,1), (1,1))) # TODO: remove this; temporary fallback til I fix where a user is required to input a timbre arg, but they shouldn't have to
         envelope = self.__dict__.get('envelope')
+        # TODO: improvisation could be a kwarg, but I don't have to imply that the user can't create a refrain-type variable and just instantiate an Improv class with that (then call the desired method later)
+        # something like:
+        # improvisation_type = self.__dict__.get('improv) # in Improv class, map the argument to the corresponding method
+
+        # check whether the performer is passing note values directly
+        # if all([notes.dtype.type is np.str_ for r in self.refrain for notes in r]):
+        #     self.refrain = convert_hz_to_note(self.refrain)
 
         y = Synthesis(
             input_refrain=self.refrain,

@@ -18,19 +18,24 @@ class Timbre:
     Will be adding save() and load() methods.
     '''
 
-    def __init__(self, input_audio, timbre = None):
-        if timbre is None:
-            self.timbre = self._get_timbre(input_audio)
+    def __init__(
+        self, 
+        input_audio,
+        sample_rate
+        ):
+        # TODO: probably allow this to simply take an Audio or Performer or Performance object
+        self.input_audio = input_audio
+        self.sample_rate = sample_rate
 
-    def _get_timbre(audio: Audio): # this doesn't need to be an Audio object explictly
+    def _get_timbre(self): 
         '''
         Returns tuple of tuples: the first number provides the harmonic overtone, the second number provides the corresponding amplitude of a the give overtone.
 
-        >> ((1, 0.75), (2, 0.5), (4, 0.5), (8, 0.1))
+        >> [(1, 0.75), (2, 0.5), (4, 0.5), (8, 0.1)]
 
         The first index is the fundamental and its corresponding amplitude as scaled by _scale_amplitude_linear(). Additional entries in this output provide the factor to multiply the fundamental by for each harmonic overtone and, of course, the corresponding amplitude_list as well.
         '''
-        y, sr = audio.audio, audio.sample_rate # add self.audio to __init__()
+        y, sr = self.input_audio, self.sample_rate
 
         # get the spectrum for the real fft, dft sample frequencies, and the absolute values of the spectrum
         N = y.shape[0]
@@ -64,9 +69,10 @@ class Timbre:
         overtones = _get_overtone_factors(frequencies_maxima)
 
         return zip(overtones, scaled_amplitudes_maxima)
+    
+    @property
+    def timbre(self, threshold=0.002):
+        # allow the end-user to specify a threshold
+        T = self._get_timbre()
+        return [(f,a) for f,a in T if a > threshold]
 
-
-
-y, sr = librosa.load('/Users/timnilsen/Documents/trope_new/181425__serylis__guitar-chord.wav')
-
-T = Timbre(y)

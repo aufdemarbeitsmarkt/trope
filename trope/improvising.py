@@ -8,7 +8,7 @@ from scipy.spatial import distance
 
 class Improv:
 
-    def __init__(self, input):
+    def __init__(self, input): # Improv should only be taking a Performer; but it might be nicer to literally treat this as a general method :thonk: -- i.e. should this just work on random lists outside the context of trope? eh, I could always do that later-ish.
         if hasattr(input, 'refrain'): # durations are created when a Performer object is instantiated, regardless of whether they're explicitly defined by the end-user; checking for 'refrain' should be sufficient
             self.input_refrain = input.refrain
             self.input_durations = input.durations
@@ -19,7 +19,7 @@ class Improv:
 
         return np.random.permutation(self.input)
 
-    def markov(self, walk_length = None):
+    def markov(self, walk_length=None):
 
         def get_next(first, samples):
             next = np.nonzero(np.isin(samples, first))[0]
