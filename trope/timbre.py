@@ -7,9 +7,10 @@ from scipy.signal import find_peaks_cwt
 
 from performing import Audio
 
+# TODO: for uniformity's sake, I should probably make this functionally similar to Envelope; the user could use a similar `from_audio()`-type method
+# behind the scenes, I might be able to make this a bit cleaner for Synthesis to use the Timbre class; right now, it's a bit messy
 
 class Timbre:
-
     '''
     Heavily influenced by: https://mapio.github.io/sinuous-violin/
 
@@ -17,7 +18,6 @@ class Timbre:
 
     Will be adding save() and load() methods.
     '''
-
     def __init__(
         self, 
         input_audio,
@@ -26,6 +26,7 @@ class Timbre:
         # TODO: probably allow this to simply take an Audio or Performer or Performance object
         self.input_audio = input_audio
         self.sample_rate = sample_rate
+
 
     def _get_timbre(self): 
         '''
@@ -70,9 +71,9 @@ class Timbre:
 
         return zip(overtones, scaled_amplitudes_maxima)
     
+
     @property
     def timbre(self, threshold=0.002):
         # allow the end-user to specify a threshold
         T = self._get_timbre()
         return [(f,a) for f,a in T if a > threshold]
-
