@@ -1,0 +1,3 @@
+equal_temperament = {'unison': 1.0, 'minor second': 2 ** (1/12), 'major second': 2 ** (2/12), 'minor third': 2 ** (3/12), 'major third': 2 ** (4/12), 'perfect fourth': 2 ** (5/12), 'tritone': 2 ** (6/12), 'perfect fifth': 2 ** (7/12), 'minor sixth': 2 ** (8/12), 'major sixth': 2 ** (9/12), 'minor seventh': 2 ** (10/12), 'major seventh': 2 ** (11/12), 'octave': 2.0}
+
+equal_temperament_decimal = {'unison': 1, 'minor second': 1.059463, 'major second': 1.122462, 'minor third': 1.189207, 'major third': 1.259921, 'perfect fourth': 1.33484, 'tritone': 1.414214, 'perfect fifth': 1.498307, 'minor sixth': 1.587401, 'major sixth': 1.681793, 'minor seventh': 1.781797, 'major seventh': 1.887749, 'octave': 2.0}

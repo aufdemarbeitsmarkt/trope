@@ -55,6 +55,7 @@ class Synthesis:
 
         self.synthesized_output = self._synthesize()
 
+
     def _generate_tone(self, frequency, duration_in_samples, amplitude=0.5, pad_amount=0):
         each_sample = np.arange(duration_in_samples)
         sine = np.sin(2 * np.pi * each_sample * frequency / self.sample_rate) * amplitude
@@ -66,6 +67,7 @@ class Synthesis:
             return np.pad(sine, (beginning, end)) # note: also works for rests
 
         return sine
+
 
     def _get_duration_in_samples(self, frequency, duration_in_seconds):
         if frequency == 0:
@@ -80,6 +82,7 @@ class Synthesis:
 
         return range_cycles[-2] if which_cycle == 0 else range_cycles[-1]
 
+
     def _initialize_matrix(self):
         '''
         Sets self.total_duration_in_samples.
@@ -87,6 +90,7 @@ class Synthesis:
         '''
         self.total_duration_in_samples = np.sum(self.max_durations_samples, dtype='int')
         return np.empty((self.refrain.shape[0], self.total_duration_in_samples))
+
 
     def _synthesize(self, normalize_output=True, sum_output=True):
         output = self._initialize_matrix()
@@ -113,6 +117,10 @@ class Synthesis:
             # set envelope
             if self.envelope is None: 
                 E = Envelope.base(sample_rate=self.sample_rate)
+
+            # if we've an envelope generated directly from audio, the envelope will simply be the user-defined instance of the class
+            elif self.envelope._from_audio_envelope is not None:
+                E = self.envelope
             else:
                 E = Envelope(*self.envelope, sample_rate=self.sample_rate)
             

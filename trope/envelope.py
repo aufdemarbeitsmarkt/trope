@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import librosa 
 import numpy as np
 
 class Envelope:
@@ -11,17 +12,20 @@ class Envelope:
 
     def __init__(
         self,
-        attack_setting,
-        decay_setting,
-        sustain_setting,
-        release_setting,
-        sample_rate
+        attack_setting=None,
+        decay_setting=None,
+        sustain_setting=None,
+        release_setting=None,
+        sample_rate=None,
+        _from_audio_envelope=None
         ):
         self.attack_setting = attack_setting
         self.decay_setting = decay_setting
         self.sustain_setting = sustain_setting
         self.release_setting = release_setting
         self.sample_rate = sample_rate
+        self._from_audio_envelope = _from_audio_envelope
+
 
     @classmethod
     def base(cls, sample_rate):
@@ -33,6 +37,7 @@ class Envelope:
             release_setting=10
             )
 
+
     @property
     def attack(self):
         attack_range = self.sample_rate * np.linspace(0.001, 5, num=100)
@@ -43,8 +48,9 @@ class Envelope:
             num=int(attack_range[self.attack_setting])
             )
 
-        complete_attack[0] = 0.0
+        complete_attack[:10] = 0.0
         return complete_attack
+
 
     @property
     def decay(self):
@@ -58,6 +64,7 @@ class Envelope:
 
         return complete_decay
 
+
     @property
     def sustain(self):
         sustain_range = self.sample_rate * np.linspace(0.001, 10, num=100)
@@ -65,6 +72,7 @@ class Envelope:
         complete_sustain = np.full(int(sustain_range[self.sustain_setting]), self.sustain_level)
 
         return complete_sustain
+
 
     def generate_release(self, input_signal_size=None, min_level=None, max_level=None):
         if min_level is None:
@@ -82,12 +90,19 @@ class Envelope:
             )
         return complete_release
 
+
     @staticmethod
     def get_release_size(input_signal_size, release_point):
         return int(input_signal_size * (release_point/100))
 
+
     def generate_envelope_signal(self, input_signal):
+                
         input_signal_size = input_signal.size
+        
+        if self._from_audio_envelope is not None:
+            return self._resample_env_from_audio(input_signal_size)
+
         release_size = self.get_release_size(input_signal_size, self.release_setting)
 
         envelope = np.zeros(input_signal_size)
@@ -139,3 +154,41 @@ class Envelope:
                 )
 
         return envelope
+
+    @classmethod
+    def from_audio(cls, input_audio) -> np.array:
+        # input is an Audio object
+
+        from scipy.signal import savgol_filter
+        
+        # window_length and polyorder were chose semi-arbitrarily 
+        # ran through several values and this seemed to be a sweet spot
+        envelope = savgol_filter(
+            np.abs(input_audio.audio), 
+            window_length=501, 
+            polyorder=1, 
+            mode='interp'
+            )
+        normalized_envelope = librosa.util.normalize(envelope)
+
+        return cls(sample_rate=input_audio.sample_rate, _from_audio_envelope=normalized_envelope)
+        
+
+    def _resample_env_from_audio(self, input_signal_size):
+
+        target_sample_rate = int((input_signal_size / (self._from_audio_envelope.size)) * self.sample_rate)
+
+        resampled_env = librosa.resample(
+            self._from_audio_envelope,
+            orig_sr=self.sample_rate,
+            target_sr=target_sample_rate
+        )
+
+        # ensure the audio and the envelope can be broadcast
+        if input_signal_size > resampled_env.size:
+            size_diff = input_signal_size - resampled_env.size
+            return np.pad(resampled_env, (size_diff,0))
+        elif input_signal_size < resampled_env.size:
+            return resampled_env[:input_signal_size]
+        else:
+            return resampled_env

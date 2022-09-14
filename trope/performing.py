@@ -24,13 +24,19 @@ class Audio:
     def playtime(self):
         return librosa.get_duration(y=self.audio, sr=self.sample_rate)
 
-    def save(self, filename=None, filetype='.wav'):
-        write(filename=filename + filetype, rate=self.sample_rate, data=self.audio)
+    def save(self, filename=None, filetype='wav'):
+        file = f'saved/{filename}.{filetype}'
+        write(filename=file, rate=self.sample_rate, data=self.audio)
 
     @classmethod
     def load(cls, file, sr=default_sample_rate, mono=True, offset=0.0, duration=None):
+        # TODO: confirm whether self.sample_rate is saved properly if the end-user changes the `sr` argument
         y, _ = librosa.load(file, sr=sr, mono=mono, offset=offset, duration=duration)
         return cls(y, sr)
+
+    def play(self):
+        import IPython.display as ipd
+        return ipd.Audio(self.audio, rate=self.sample_rate)
 
 
 class Performer(Audio):
@@ -52,6 +58,7 @@ class Performer(Audio):
         self.sample_rate = sample_rate
 
         self.audio = self._create_audio()
+
 
     def _create_audio(self):
         effects_dict = self.__dict__.get('effects')

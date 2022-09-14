@@ -15,9 +15,11 @@ class Improv:
         else:
             self.input = input
 
+
     def permutation(self):
 
         return np.random.permutation(self.input)
+
 
     def markov(self, walk_length=None):
 
@@ -52,6 +54,7 @@ class Improv:
             return markov_iteration
 
         return create_markov_iteration(self.input)
+
 
     def rossmo(self):
 
