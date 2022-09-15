@@ -2,10 +2,8 @@
 import librosa
 import numpy as np
 from scipy.io.wavfile import write
-import time
 
 from effects import Effect
-from improvising import Improv
 from synthesizing import Synthesis
 from scales_and_tunings import convert_hz_to_note
 
@@ -65,6 +63,8 @@ class Performer(Audio):
         durations = self.__dict__.get('durations', [1])
         timbre = self.__dict__.get('timbre', ((1,1), (1,1))) # TODO: remove this; temporary fallback til I fix where a user is required to input a timbre arg, but they shouldn't have to
         envelope = self.__dict__.get('envelope')
+        loop = self.__dict__.get('loop')
+
         # TODO: improvisation could be a kwarg, but I don't have to imply that the user can't create a refrain-type variable and just instantiate an Improv class with that (then call the desired method later)
         # something like:
         # improvisation_type = self.__dict__.get('improv) # in Improv class, map the argument to the corresponding method
@@ -80,6 +80,10 @@ class Performer(Audio):
             timbre=timbre,
             envelope=envelope
         ).synthesized_output
+
+        if loop is not None:
+            # TODO: allow user to define this later, after already instantiating a Performer
+            y = np.tile(y, loop)
 
         if effects_dict is None:
             return y

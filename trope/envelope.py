@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import librosa 
 import numpy as np
+from scipy.signal import savgol_filter
 
 class Envelope:
 
@@ -158,8 +159,6 @@ class Envelope:
     @classmethod
     def from_audio(cls, input_audio) -> np.array:
         # input is an Audio object
-
-        from scipy.signal import savgol_filter
         
         # window_length and polyorder were chose semi-arbitrarily 
         # ran through several values and this seemed to be a sweet spot

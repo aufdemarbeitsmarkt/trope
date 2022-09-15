@@ -76,4 +76,4 @@ class Timbre:
     def timbre(self, threshold=0.002):
         # allow the end-user to specify a threshold
         T = self._get_timbre()
-        return [(f,a) for f,a in T if a > threshold]
+        return [(round(f,2),a) for f,a in T if a > threshold]

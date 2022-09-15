@@ -119,8 +119,10 @@ class Synthesis:
                 E = Envelope.base(sample_rate=self.sample_rate)
 
             # if we've an envelope generated directly from audio, the envelope will simply be the user-defined instance of the class
-            elif self.envelope._from_audio_envelope is not None:
-                E = self.envelope
+            # TODO: make this a bit smarter; can I self.__dict__.get or something like that? 
+            elif hasattr(self.envelope, '_from_audio_envelope'):
+                if self.envelope._from_audio_envelope is not None:
+                    E = self.envelope
             else:
                 E = Envelope(*self.envelope, sample_rate=self.sample_rate)
             
