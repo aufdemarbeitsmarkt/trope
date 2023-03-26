@@ -67,11 +67,11 @@ class Scale:
         '''
         Returns the values in hz for a Scale object.
         '''
-        # TODO: fix sorting issue, e.g. E major will proceed from E1 on, hitting C1, which is LOWER in pitch
-        notes_list = sorted([f'{n}{i}' for n in self.notes for i in range(1,9)], key=lambda x:x[-1])
+        # TODO: calling note_to_hz() twice in this method is redundant; quick and dirty way to ensure sorting is correct, but should be fixed at some point
+        notes_list = sorted([f'{n}{i}' for n in self.notes for i in range(1,9)], key=lambda x:note_to_hz(x))
         hz_arr = note_to_hz(
             notes_list[notes_list.index(f'{self.root}1'):]
-            )   
+            )
         return hz_arr
 
     def _get_chord_order(self):
@@ -88,7 +88,7 @@ class Scale:
         }
 
         for note, chord_type in zip(self.notes, self._get_chord_order()):
-            # TODO: need to accommodate for cases where this goes past locrian
+            # TODO: need to accommodate for cases where this goes "past" locrian in the `names` dict, e.g. pentatonic, whole, and chromatic
             C = Chord(note, chord_type)
             freqs = C.hz
 
