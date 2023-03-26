@@ -1,11 +1,11 @@
 #!/usr/bin/python3
+import IPython.display as ipd
 import librosa
 import numpy as np
 from scipy.io.wavfile import write
 
 from effects import Effect
 from synthesizing import Synthesis
-from scales_and_tunings import convert_hz_to_note
 
 
 class Audio:
@@ -33,65 +33,80 @@ class Audio:
         return cls(y, sr)
 
     def play(self):
-        import IPython.display as ipd
+        #  TODO: there needs to be a check to ensure audio is summed normalized before playing, see: https://github.com/aufdemarbeitsmarkt/trope/issues/10
         return ipd.Audio(self.audio, rate=self.sample_rate)
 
 
 class Performer(Audio):
+
+    DEFAULT_BPM = 120
 
     def __init__(
         self,
         refrain,
         audio=None,
         sample_rate=None,
+        note_type=None,
+        duration_type=None,
+        tempo=None,
         **kwargs
         ):
         super().__init__(sample_rate)
-        self.__dict__.update(kwargs)
         
         self.refrain = np.asarray(refrain)
-
+        
         if sample_rate is None:
             sample_rate = self.default_sample_rate
         self.sample_rate = sample_rate
 
+
+        if note_type is None:
+            note_type = 'name' # TODO: this is a "placeholder name"; come up with list of options, e.g. 'name', 'frequency', ? 
+        self.note_type = note_type
+        
+        if duration_type is None:
+            duration_type = 'beat' # TODO: this is a "placeholder name"; come up with list of options, e.g. 'beat', 'second', ? 
+        self.duration_type = duration_type 
+
+        if tempo == None:
+            tempo = self.DEFAULT_BPM
+        self.tempo = tempo
+
+        for k,v in kwargs.items():
+            setattr(self, k, v)
+        
+        # TODO: figure out a clearer way to create this audio attribute
         self.audio = self._create_audio()
 
-
     def _create_audio(self):
-        effects_dict = self.__dict__.get('effects')
-        durations = self.__dict__.get('durations', [1])
-        timbre = self.__dict__.get('timbre', ((1,1), (1,1))) # TODO: remove this; temporary fallback til I fix where a user is required to input a timbre arg, but they shouldn't have to
-        envelope = self.__dict__.get('envelope')
-        loop = self.__dict__.get('loop')
-
-        # TODO: improvisation could be a kwarg, but I don't have to imply that the user can't create a refrain-type variable and just instantiate an Improv class with that (then call the desired method later)
-        # something like:
-        # improvisation_type = self.__dict__.get('improv) # in Improv class, map the argument to the corresponding method
-
-        # check whether the performer is passing note values directly
-        # if all([notes.dtype.type is np.str_ for r in self.refrain for notes in r]):
-        #     self.refrain = convert_hz_to_note(self.refrain)
+        durations = getattr(self, 'durations', [1])
+        effects = getattr(self, 'effects', None)
+        envelope = getattr(self, 'envelope', None)
+        loop = getattr(self, 'loop', None)
+        timbre = getattr(self, 'timbre', ((1,1), (1,1))) # TODO: evenutally, remove this fallback (right now, a user is required to input a timbre arg, but they shouldn't have to)
 
         y = Synthesis(
             input_refrain=self.refrain,
             input_durations=durations,
             sample_rate=self.sample_rate,
+            note_type=self.note_type,
+            duration_type=self.duration_type,
+            tempo=self.tempo,
             timbre=timbre,
             envelope=envelope
         ).synthesized_output
 
         if loop is not None:
-            # TODO: allow user to define this later, after already instantiating a Performer
+            # TODO: allow user to define a loop later, even if they've already instantiated Performer
             y = np.tile(y, loop)
 
-        if effects_dict is None:
+        if effects is None:
             return y
-        elif effects_dict is not None:
+        elif effects is not None:
             effect_y = Effect(
                 input_audio=y,
                 sample_rate=self.sample_rate,
-                **effects_dict
+                **effects
             ).output_audio
             return effect_y
 

@@ -39,6 +39,7 @@ class Timbre:
         y, sr = self.input_audio, self.sample_rate
 
         # get the spectrum for the real fft, dft sample frequencies, and the absolute values of the spectrum
+        # TODO: implement this using stft; check for noisiness to adjust window size if necessary
         N = y.shape[0]
         spectrum = np.fft.rfft(y)
         frequencies = np.fft.rfftfreq(N, 1 / sr)
@@ -73,7 +74,8 @@ class Timbre:
     
 
     @property
-    def timbre(self, threshold=0.002):
+    # TODO: you can't set an argument on a property like this; remove it.
+    def timbre(self, threshold=0.00):
         # allow the end-user to specify a threshold
         T = self._get_timbre()
         return [(round(f,2),a) for f,a in T if a > threshold]

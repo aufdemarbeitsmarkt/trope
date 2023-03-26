@@ -67,6 +67,7 @@ class Scale:
         '''
         Returns the values in hz for a Scale object.
         '''
+        # TODO: fix sorting issue, e.g. E major will proceed from E1 on, hitting C1, which is LOWER in pitch
         notes_list = sorted([f'{n}{i}' for n in self.notes for i in range(1,9)], key=lambda x:x[-1])
         hz_arr = note_to_hz(
             notes_list[notes_list.index(f'{self.root}1'):]

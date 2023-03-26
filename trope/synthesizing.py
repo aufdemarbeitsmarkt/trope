@@ -5,8 +5,10 @@ import numpy as np
 
 from envelope import Envelope
 from scales_and_tunings import convert_hz_to_note
+from rhythm_and_meter import duration_to_time
 
 
+# TODO: make this an implied private class, `_Synthesis`
 class Synthesis:
 
     def __init__(
@@ -14,20 +16,28 @@ class Synthesis:
         input_refrain,
         input_durations,
         sample_rate,
+        note_type,
+        duration_type,
+        tempo,
         envelope=None,
-        timbre=None
+        timbre=None,
         ):
-        # TODO
-        # enforce 2-dimensionality of refrain and 1-dimensionality of durations
+        # TODO: enforce 2-dimensionality of refrain and 1-dimensionality of durations
         self.input_refrain = np.asarray(input_refrain) 
         self.input_durations = np.asarray(input_durations)
         self.sample_rate = sample_rate
+        self.note_type = note_type
+        self.duration_type = duration_type
+        self.tempo = tempo
         self.envelope = envelope
         self.timbre = timbre
 
-        # check whether the performer is passing note values directly
-        if all([notes.dtype.type is np.str_ for r in self.input_refrain for notes in r]):
+        if self.note_type == 'name':
+            # TODO: add exception handling and check if all values are strings, e.g. all([notes.dtype.type is np.str_ for r in self.input_refrain for notes in r])
             self.input_refrain = convert_hz_to_note(self.input_refrain)
+
+        if self.duration_type == 'beat':
+            self.input_durations = duration_to_time(self.input_durations, self.tempo)
 
         if self.input_refrain.shape[1] != self.input_durations.shape[0]:
             # ensure they have the same size by tiling, create 'refrain' and 'durations' attributes
