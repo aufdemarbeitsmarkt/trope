@@ -102,7 +102,7 @@ class Synthesis:
         return np.empty((self.refrain.shape[0], self.total_duration_in_samples))
 
 
-    def _synthesize(self, normalize_output=True, sum_output=True):
+    def _synthesize(self):
         output = self._initialize_matrix()
 
         t = iter(self.timbre) if self.timbre is not None else False
@@ -141,9 +141,5 @@ class Synthesis:
 
             output[i[0], self.sample_boundaries[i[1]] : self.sample_boundaries[i[1]]+tone.size] = tone
 
-        if normalize_output:
-            output = librosa.util.normalize(output, norm=0, axis=0, threshold=None, fill=None)
-        if sum_output:
-            output = np.sum(output, axis=0)
-
         return output
+    

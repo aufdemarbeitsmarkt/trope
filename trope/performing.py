@@ -21,9 +21,19 @@ class Audio:
     @property
     def playtime(self):
         return librosa.get_duration(y=self.audio, sr=self.sample_rate)
+    
+    # "helper" methods for normalizing and summing audio
+    def _normalize_audio(self, audio):
+        return librosa.util.normalize(audio, norm=0, axis=0, threshold=None, fill=None)
+    
+    def _sum_audio(self, audio):
+        return np.sum(audio, axis=0) 
+
+    def _sum_and_normalize(self, audio):
+        return self._sum_audio(self._normalize_audio(audio))
 
     def save(self, filename=None, filetype='wav'):
-        file = f'saved/{filename}.{filetype}'
+        file = f'{filename}.{filetype}'
         write(filename=file, rate=self.sample_rate, data=self.audio)
 
     @classmethod
@@ -101,14 +111,16 @@ class Performer(Audio):
             y = np.tile(y, loop)
 
         if effects is None:
-            return y
+            return self._sum_and_normalize(y)
+            # return y
         elif effects is not None:
             effect_y = Effect(
                 input_audio=y,
                 sample_rate=self.sample_rate,
                 **effects
             ).output_audio
-            return effect_y
+            return self._sum_and_normalize(effect_y)
+            # return effect_y
 
 
 class Performance(Audio):
@@ -130,6 +142,7 @@ class Performance(Audio):
 
     def _create_performance(self):
 
+        # TODO: incorporate summing and normalizing here
         normalized_performers = librosa.util.normalize(self.performers, norm=0, axis=0, threshold=None, fill=None)
 
         return np.sum(normalized_performers, axis=0)

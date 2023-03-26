@@ -5,8 +5,11 @@ from librosa import note_to_hz
 import numpy as np
 
 NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+
+# TODO: incorporate `NOTES_SHARP` and `NOTES_FLAT` to ensure the correct `notes` property is returned. This is largely cosmetic, so not terribly high priority. 
 NOTES_SHARP = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 NOTES_FLAT = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
+
 CHORD_ORDER = ['major', 'minor', 'minor', 'major', 'major', 'minor', 'diminished'] # "default"
 
 def convert_hz_to_note(notes_arr):

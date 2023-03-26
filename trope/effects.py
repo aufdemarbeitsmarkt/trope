@@ -14,19 +14,19 @@ class Effect:
 
     def _delay(self):
         delay_params = self.__dict__.get('delay')
+        # TODO: "feedback" implies the signal feeds back into itself; should rename this something like "repeats" 
         feedback, delay_time, decay, mode = delay_params
         delay_time_samples = int(self.sample_rate * (delay_time / 1000))
 
         if mode is None or mode == 'empty': # empty could be bad
             mode = 'constant'
 
-        delayed = librosa.feature.stack_memory(self.input_audio, n_steps=feedback, delay=delay_time_samples, mode=mode)
+        delayed_signal = librosa.feature.stack_memory(self.input_audio, n_steps=feedback, delay=delay_time_samples, mode=mode)
 
         if decay is not None:
             decay_range = np.linspace(decay[0], decay[1], feedback)
-            for drng, dlyd in zip(decay_range, delayed[1:]):
+            for drng, dlyd in zip(decay_range, delayed_signal[1:]):
                 dlyd *= drng
 
-        normalized_delay = librosa.util.normalize(delayed, norm=0, axis=0, threshold=None, fill=None)
-
-        return np.sum(normalized_delay, axis=0)
+        return delayed_signal 
+    
