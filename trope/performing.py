@@ -29,9 +29,14 @@ class Audio:
     def _sum_audio(self, audio):
         return np.sum(audio, axis=0) 
 
-    def _sum_and_normalize(self, audio):
-        return self._sum_audio(self._normalize_audio(audio))
+    def _sum_and_normalize(self, func):
+        def wrapper__sum_and_normalize(*args):
+            return self.sum_audio(
+                self._normalize_audio(*args)
+            )
+        return wrapper__sum_and_normalize
 
+    # TODO: the save() method needs _sum_and_normalize() decorator
     def save(self, filename=None, filetype='wav'):
         file = f'{filename}.{filetype}'
         write(filename=file, rate=self.sample_rate, data=self.audio)
@@ -46,7 +51,7 @@ class Audio:
         #  TODO: there needs to be a check to ensure audio is summed normalized before playing, see: https://github.com/aufdemarbeitsmarkt/trope/issues/10
         return ipd.Audio(self.audio, rate=self.sample_rate)
 
-
+# TODO: add concat() / endwith() methods
 class Performer(Audio):
 
     DEFAULT_BPM = 120
@@ -54,6 +59,7 @@ class Performer(Audio):
     def __init__(
         self,
         refrain,
+        # TODO: this inherits from Audio class, but end-user should not be able to set audio directly; should audio be removed? 
         audio=None,
         sample_rate=None,
         note_type=None,
@@ -78,14 +84,13 @@ class Performer(Audio):
             duration_type = 'beat' # TODO: this is a "placeholder name"; come up with list of options, e.g. 'beat', 'second', ? 
         self.duration_type = duration_type 
 
-        if tempo == None:
+        if tempo is None:
             tempo = self.DEFAULT_BPM
         self.tempo = tempo
 
         for k,v in kwargs.items():
             setattr(self, k, v)
         
-        # TODO: figure out a clearer way to create this audio attribute
         self.audio = self._create_audio()
 
     def _create_audio(self):
@@ -93,7 +98,7 @@ class Performer(Audio):
         effects = getattr(self, 'effects', None)
         envelope = getattr(self, 'envelope', None)
         loop = getattr(self, 'loop', None)
-        timbre = getattr(self, 'timbre', ((1,1), (1,1))) # TODO: evenutally, remove this fallback (right now, a user is required to input a timbre arg, but they shouldn't have to)
+        timbre = getattr(self, 'timbre', [(1,1), (1,1)]) # TODO: evenutally, remove this 'timbre' fallback (without this, a user is required to input a timbre arg, but they shouldn't have to)
 
         y = Synthesis(
             input_refrain=self.refrain,

@@ -23,24 +23,24 @@ class Improv:
 
     def markov(self, walk_length=None):
 
-        def get_next(first, samples):
+        def _get_next(first, samples):
             next = np.nonzero(np.isin(samples, first))[0]
             if first == samples[-1]:
                 next = next[:-1]
             return next + 1
 
-        def create_markov_dict(samples):
-            markov_dict = {sample: np.asarray(samples)[get_next(sample, samples)] for sample in set(samples)}
+        def _create_markov_dict(samples):
+            markov_dict = {sample: np.asarray(samples)[_get_next(sample, samples)] for sample in set(samples)}
             return markov_dict
 
-        def create_markov_iteration(samples):
+        def _create_markov_iteration(samples):
             output_len = len(samples) if walk_length is None else walk_length
             mode = stats.mode(samples)
 
             markov_iteration = []
             starting_point = samples[0]
 
-            markov_dict = create_markov_dict(samples)
+            markov_dict = _create_markov_dict(samples)
 
             first_random = random.choice(markov_dict[starting_point])
             markov_iteration.extend([starting_point, first_random])
@@ -53,7 +53,7 @@ class Improv:
 
             return markov_iteration
 
-        return create_markov_iteration(self.input)
+        return _create_markov_iteration(self.input)
 
 
     def rossmo(self):

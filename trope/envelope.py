@@ -164,7 +164,7 @@ class Envelope:
         # ran through several values and this seemed to be a sweet spot
         envelope = savgol_filter(
             np.abs(input_audio.audio), 
-            window_length=501, 
+            window_length=512, 
             polyorder=1, 
             mode='interp'
             )
