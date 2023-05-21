@@ -52,6 +52,14 @@ class Improv:
                     markov_iteration.append(mode[0][0])
 
             return markov_iteration
+        
+        # if the shape of `refrain` is > 1, create a markov iteration for each element
+        refrain_shape = self.input.shape
+        if len(refrain_shape) > 1:
+            output_if_multidimensional = []
+            for i in self.input:
+                output_if_multidimensional.append(_create_markov_iteration(i))
+            return np.asarray(output_if_multidimensional)
 
         return _create_markov_iteration(self.input)
 
