@@ -3,6 +3,7 @@ import librosa
 import numpy as np
 from scipy.signal import savgol_filter
 
+# TODO: allow end-user to specify linspace() or geomspace() 
 class Envelope:
 
     # insert default arguments for each stage here, e.g. sample_rate * np.linspace(param1, param2, num=param3)
@@ -43,7 +44,7 @@ class Envelope:
     def attack(self):
         attack_range = self.sample_rate * np.linspace(0.001, 5, num=100)
 
-        complete_attack = np.geomspace(
+        complete_attack = np.linspace(
             self.quiet_level,
             self.attack_level,
             num=int(attack_range[self.attack_setting])
@@ -57,7 +58,7 @@ class Envelope:
     def decay(self):
         decay_range = self.sample_rate * np.linspace(0.001, 10, num=100)
 
-        complete_decay = np.geomspace(
+        complete_decay = np.linspace(
             self.attack_level,
             self.sustain_level,
             num=int(decay_range[self.decay_setting])
@@ -84,7 +85,7 @@ class Envelope:
         release_size = self.get_release_size(input_signal_size, self.release_setting)
 
         release_range = self.sample_rate * np.linspace(0.001, 10, num=100)
-        complete_release = np.geomspace(
+        complete_release = np.linspace(
             min_level,
             max_level,
             num=release_size

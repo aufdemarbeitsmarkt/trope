@@ -23,18 +23,19 @@ class Timbre:
         ):
         self.audio = audio
 
-        self.input_audio = self.audio.audio
-        self.sample_rate = self.audio.sample_rate
+        self.audio_to_process = self.audio.audio
+        self.sample_rate = self.audio.sample_rate 
 
-    # TODO: this isn't doing anything at the moment; integrate it
+        self.timbre = self._get_timbre()
+
+    # TODO: need to implement this downsampling
     def _downsample_audio(self):
         # downsample audio for speed; has the added benefit of excluding relatively high frequencies
-        if self.sample_rate > 5512:
-            return librosa.resample(
-                self.input_audio,
-                orig_sr=self.sample_rate,
-                target_sr=5512
-            )
+        return librosa.resample(
+            self.audio.audio,
+            orig_sr=self.audio.sample_rate,
+            target_sr=5512
+        )
 
     def _get_timbre(self): 
         '''
@@ -44,12 +45,11 @@ class Timbre:
 
         The first index is the fundamental and its corresponding amplitude as scaled by scale_linearly(). Additional entries in this output provide the factor to multiply the fundamental by for each harmonic overtone and, of course, the corresponding amplitude_list as well.
         '''
-        y, sr = self.input_audio, self.sample_rate
 
         # get the spectrum for the real fft, dft sample frequencies, and the absolute values of the spectrum
-        N = y.shape[0]
-        spectrum = np.fft.rfft(y)
-        frequencies = np.fft.rfftfreq(N, 1 / sr)
+        N = self.audio_to_process.shape[0]
+        spectrum = np.fft.rfft(self.audio_to_process)
+        frequencies = np.fft.rfftfreq(N, 1 / self.sample_rate)
         amplitudes = np.abs(spectrum)
 
         # get the maxima of the amplitudes and the frequencies
@@ -59,27 +59,23 @@ class Timbre:
         frequencies_maxima = frequencies[np.isin(amplitudes, amplitudes_maxima)]
 
         def _get_fundamental(audio, frequencies):
-            pyin_fundamental = mode(librosa.pyin(audio, fmin=20, fmax=3000)[0]).mode
+            # TODO: need to handle when there is no fundamental found -- this'll return a nan
+            pyin_fundamental = mode(librosa.pyin(audio, fmin=20, fmax=3000)[0], nan_policy='omit').mode
             fundamental_index = np.isclose(pyin_fundamental, frequencies, atol=4)
-            return frequencies[fundamental_index][0]
+            return frequencies[fundamental_index]
 
         def _get_overtone_factors(frequencies_list: List) -> List[float]:
             '''
             Returns a list, as described in the docstring for _get_timbre(), where the first index is the fundamental (1.0) and the remaining entries are the factor by which one would multiply the fundamental to get the Hz value of the overtones.
             '''
-            fundamental = _get_fundamental(y, frequencies_maxima)
-            overtone_factors = [f / fundamental for f in frequencies_list]
+            fundamental = _get_fundamental(self.audio_to_process, frequencies_maxima)
+            if fundamental in frequencies_list:
+                overtone_factors = [f / fundamental for f in frequencies_list]
+            else:
+                overtone_factors = [f / frequencies_list[0] for f in frequencies_list]
             return overtone_factors
 
         scaled_amplitudes_maxima = amplitudes_maxima
         overtones = _get_overtone_factors(frequencies_maxima)
 
         return zip(overtones, scaled_amplitudes_maxima)
-    
-
-    # TODO: having this as a property isn't great -- takes too long to run, especially when I only want to access the value
-    @property
-    def timbre(self):
-        # allow the end-user to specify a threshold
-        T = self._get_timbre()
-        return [(round(f,2),a) for f,a in T]

@@ -29,12 +29,15 @@ class Audio:
     def _sum_audio(self, audio):
         return np.sum(audio, axis=0) 
 
-    def _sum_and_normalize(self, func):
-        def wrapper__sum_and_normalize(*args):
-            return self.sum_audio(
-                self._normalize_audio(*args)
-            )
-        return wrapper__sum_and_normalize
+    # def _sum_and_normalize(self, func):
+    #     def wrapper__sum_and_normalize(*args):
+    #         return self.sum_audio(
+    #             self._normalize_audio(*args)
+    #         )
+    #     return wrapper__sum_and_normalize
+
+    def _sum_and_normalize(self, audio):
+        return self._sum_audio(self._normalize_audio(audio))
 
     # TODO: the save() method needs _sum_and_normalize() decorator
     def save(self, filename=None, filetype='wav'):
@@ -47,8 +50,9 @@ class Audio:
         y, _ = librosa.load(file, sr=sr, mono=mono, offset=offset, duration=duration)
         return cls(y, sr)
 
+
+    # TODO: there needs to be a check to ensure audio is summed before playing; IPython already normalizes, so I think it's superfluous to do this before playing. Only summing should be necessary.
     def play(self):
-        #  TODO: there needs to be a check to ensure audio is summed normalized before playing, see: https://github.com/aufdemarbeitsmarkt/trope/issues/10
         return ipd.Audio(self.audio, rate=self.sample_rate)
 
 # TODO: add concat() / endwith() methods
